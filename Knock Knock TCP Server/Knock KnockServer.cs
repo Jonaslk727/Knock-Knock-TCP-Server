@@ -1,10 +1,12 @@
-﻿using System;
+﻿using Knock_Knock_TCP_Server;
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using Knock_Knock_TCP_Server.States;
 
-namespace Knock_Kncok_TCP_Client
+namespace Knock_Knock_TCP_Server
 {
     internal class Knock_KnockServer : IDisposable
     {
@@ -16,6 +18,8 @@ namespace Knock_Kncok_TCP_Client
         private StreamReader? _streamReader;
         private StreamWriter? _streamWriter;
 
+        private IKnockKnockState _currentState = new WaitingForKnockKnockState ();
+
         public void Start()
         {
             StartListener();
@@ -24,7 +28,27 @@ namespace Knock_Kncok_TCP_Client
 
             SetupStreams();
 
-            KnockKnock();
+            RunConversation();
+        }
+
+        private void RunConversation()
+        {
+            while (true)
+            {
+                _currentState.Handle (this);
+
+                if (_currentState is FinishedState)
+                {
+                    _currentState.Handle (this);
+                    break; // Exit the loop if the current state is FinishedState
+                }
+            }
+
+        }
+
+        public void SetState(IKnockKnockState state)
+        {
+            _currentState = state;
         }
 
         private void StartListener()
@@ -38,8 +62,7 @@ namespace Knock_Kncok_TCP_Client
         {
             _client = _tcpListener.AcceptTcpClient();
 
-            Console.WriteLine(
-                $"Client connected: {_client.Client.RemoteEndPoint}");
+            Console.WriteLine($"Client connected: {_client.Client.RemoteEndPoint}");
         }
 
         private void SetupStreams()
@@ -54,29 +77,29 @@ namespace Knock_Kncok_TCP_Client
             };
         }
 
-        private void KnockKnock()
-        {
-            ReadMessage();
+        //private void KnockKnock()
+        //{
+        //    ReadMessage();
 
-            SendMessage("Who's there?");
+        //    SendMessage("Who's there?");
 
-            string? message = ReadMessage();
+        //    string? message = ReadMessage();
 
-            SendMessage($"{message} who?");
+        //    SendMessage($"{message} who?");
 
-            ReadMessage();
+        //    ReadMessage();
 
-            SendMessage("Haha! That's a good one!");
-        }
+        //    SendMessage("Haha! That's a good one!");
+        //}
 
-        private void SendMessage(string message)
+        public void SendMessage(string message)
         {
             Console.WriteLine($"Server: {message}");
 
             _streamWriter!.WriteLine(message);
         }
 
-        private string? ReadMessage()
+        public string? ReadMessage()
         {
             string? message = _streamReader!.ReadLine();
 

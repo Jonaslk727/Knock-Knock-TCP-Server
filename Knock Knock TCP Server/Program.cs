@@ -1,4 +1,4 @@
-﻿using Knock_Kncok_TCP_Client;
+﻿
 using System.Net;
 using System.Net.Sockets;
 
@@ -12,6 +12,11 @@ namespace Knock_Knock_TCP_Server
 
 
             server.Start();
+
+            server.Dispose();
+
+            Console.WriteLine ("Press any key to exit...");
+            Console.ReadKey ();
         }
     }
 }

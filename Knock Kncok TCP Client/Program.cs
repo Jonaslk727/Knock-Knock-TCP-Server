@@ -9,6 +9,9 @@ namespace Knock_Kncok_TCP_Client
             using Knock_Kncok_Client client = new Knock_Kncok_Client();
 
             client.Start();
+
+            Console.WriteLine ("Press any key to exit...");
+            Console.ReadKey ();
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net.Sockets;
+using System.Net;
 using System.Text;
 
 namespace Knock_Kncok_TCP_Client
@@ -11,6 +12,10 @@ namespace Knock_Kncok_TCP_Client
         private NetworkStream _networkStream;
         private StreamReader _streamReader;
         private StreamWriter _streamWriter;
+
+        private int _port = 5001;
+
+        public string ServerAddress { get; set; } = "Localhost";
 
         public void Start()
         {
@@ -23,7 +28,7 @@ namespace Knock_Kncok_TCP_Client
 
         private void Connect()
         {
-            _client = new TcpClient("127.0.0.1", 5001);
+            _client = new TcpClient(ServerAddress, _port);
 
             Console.WriteLine("Connected to server.");
 
