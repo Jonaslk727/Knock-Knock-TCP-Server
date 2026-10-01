@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="Knock Kncok TCP Client/Knock Kncok TCP Client.csproj" />
+  <Project Path="Knock Knock TCP Server/Knock Knock TCP Server.csproj" />
+</Solution>
