@@ -1,120 +1,143 @@
-﻿using Knock_Knock_TCP_Server;
+﻿using Knock_Knock_TCP_Server.Configuration;
+using Knock_Knock_TCP_Server.Services;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
-using Knock_Knock_TCP_Server.States;
 
 namespace Knock_Knock_TCP_Server
 {
-    internal class Knock_KnockServer : IDisposable
+    /// <summary>
+    /// Multithreaded Knock Knock TCP Server.
+    /// The server listens for incoming client connections on a configured port.
+    /// For each new connection, a ClientHandler is created and run in a dedicated thread.
+    /// The main thread continues listening for new connections.
+    /// </summary>
+    internal class Knock_KnockServer
     {
-        private TcpListener _tcpListener =
-            new TcpListener(IPAddress.Any, 5001);
+        private TcpListener? _tcpListener;
+        private readonly IServiceProvider _serviceProvider;
+        private readonly IOptions<ServerOptions> _serverOptions;
+        private readonly IJokeSelector _jokeSelector;
+        private List<Thread> _clientThreads = new List<Thread>();
+        private bool _isRunning = false;
 
-        private TcpClient? _client;
-        private NetworkStream? _networkStream;
-        private StreamReader? _streamReader;
-        private StreamWriter? _streamWriter;
+        public Knock_KnockServer(
+            IServiceProvider serviceProvider,
+            IOptions<ServerOptions> serverOptions,
+            IJokeSelector jokeSelector)
+        {
+            _serviceProvider = serviceProvider;
+            _serverOptions = serverOptions;
+            _jokeSelector = jokeSelector;
+        }
 
-        private IKnockKnockState _currentState = new WaitingForKnockKnockState ();
-
+        /// <summary>
+        /// Main server loop: listen for incoming connections and spawn client handler threads.
+        /// </summary>
         public void Start()
         {
-            StartListener();
+            _isRunning = true;
 
-            AcceptClient();
-
-            SetupStreams();
-
-            RunConversation();
-        }
-
-        private void RunConversation()
-        {
-            while (true)
+            try
             {
-                _currentState.Handle (this);
-
-                if (_currentState is FinishedState)
-                {
-                    _currentState.Handle (this);
-                    break; // Exit the loop if the current state is FinishedState
-                }
+                StartListener();
+                AcceptConnections();
             }
-
-        }
-
-        public void SetState(IKnockKnockState state)
-        {
-            _currentState = state;
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Server error: {ex.Message}");
+            }
+            finally
+            {
+                Stop();
+            }
         }
 
         private void StartListener()
         {
+            var port = _serverOptions.Value.Port;
+            _tcpListener = new TcpListener(IPAddress.Any, port);
             _tcpListener.Start();
 
-            Console.WriteLine("Waiting for client...");
+            Console.WriteLine($"Server started on port {port}. Waiting for client connections...");
+            Console.WriteLine($"Joke selection strategy: {_jokeSelector.StrategyName}");
         }
 
-        private void AcceptClient()
+        private void AcceptConnections()
         {
-            _client = _tcpListener.AcceptTcpClient();
-
-            Console.WriteLine($"Client connected: {_client.Client.RemoteEndPoint}");
-        }
-
-        private void SetupStreams()
-        {
-            _networkStream = _client!.GetStream();
-
-            _streamReader = new StreamReader(_networkStream);
-
-            _streamWriter = new StreamWriter(_networkStream)
+            while (_isRunning)
             {
-                AutoFlush = true
-            };
+                try
+                {
+                    // This blocks until a client connects
+                    TcpClient client = _tcpListener!.AcceptTcpClient();
+
+                    // Create a handler for this client
+                    var handler = new ClientHandler(
+                        client,
+                        _serviceProvider,
+                        _serviceProvider.GetRequiredService<IOptions<JokesConfiguration>>(),
+                        _jokeSelector);
+
+                    // Spawn a new thread to handle this client
+                    var clientThread = new Thread(() => handler.Run())
+                    {
+                        IsBackground = true,
+                        Name = $"ClientHandler-{client.Client.RemoteEndPoint}"
+                    };
+
+                    lock (_clientThreads)
+                    {
+                        _clientThreads.Add(clientThread);
+                    }
+
+                    clientThread.Start();
+                }
+                catch (SocketException ex) when (!_isRunning)
+                {
+                    // Expected when listener is stopped
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error accepting client connection: {ex.Message}");
+                }
+            }
         }
 
-        //private void KnockKnock()
-        //{
-        //    ReadMessage();
-
-        //    SendMessage("Who's there?");
-
-        //    string? message = ReadMessage();
-
-        //    SendMessage($"{message} who?");
-
-        //    ReadMessage();
-
-        //    SendMessage("Haha! That's a good one!");
-        //}
-
-        public void SendMessage(string message)
+        private void Stop()
         {
-            Console.WriteLine($"Server: {message}");
+            _isRunning = false;
 
-            _streamWriter!.WriteLine(message);
-        }
+            try
+            {
+                _tcpListener?.Stop();
+                Console.WriteLine("Listener stopped.");
 
-        public string? ReadMessage()
-        {
-            string? message = _streamReader!.ReadLine();
+                // Optionally wait for client threads to finish (with timeout)
+                Console.WriteLine("Waiting for client connections to close...");
+                lock (_clientThreads)
+                {
+                    foreach (var thread in _clientThreads)
+                    {
+                        if (thread.IsAlive && !thread.Join(TimeSpan.FromSeconds(2)))
+                        {
+                            Console.WriteLine($"Timeout waiting for thread {thread.Name}");
+                        }
+                    }
+                }
 
-            Console.WriteLine($"Client: {message}");
-
-            return message;
-        }
-
-        public void Dispose()
-        {
-            _streamReader?.Dispose();
-            _streamWriter?.Dispose();
-            _networkStream?.Dispose();
-            _client?.Dispose();
-            _tcpListener.Stop();
+                Console.WriteLine("All client connections closed.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error during shutdown: {ex.Message}");
+            }
         }
     }
 }
+
