@@ -16,7 +16,7 @@ namespace Knock_Knock_TCP_Server
     /// For each new connection, a ClientHandler is created and run in a dedicated thread.
     /// The main thread continues listening for new connections.
     /// </summary>
-    internal class Knock_KnockServer
+    public class Knock_KnockServer
     {
         private TcpListener? _tcpListener;
         private readonly IServiceProvider _serviceProvider;
@@ -24,6 +24,7 @@ namespace Knock_Knock_TCP_Server
         private readonly IJokeSelector _jokeSelector;
         private List<Thread> _clientThreads = new List<Thread>();
         private bool _isRunning = false;
+        private bool _hasStopped = false;  // Guard against multiple Stop() calls
 
         public Knock_KnockServer(
             IServiceProvider serviceProvider,
@@ -57,10 +58,25 @@ namespace Knock_Knock_TCP_Server
             }
         }
 
+        /// <summary>
+        /// Stops the server from accepting new connections.
+        /// Safe to call multiple times.
+        /// </summary>
+        public void Stop()
+        {
+            // Prevent multiple simultaneous Stop() calls
+            if (_hasStopped)
+                return;
+
+            _hasStopped = true;
+            StopInternal();
+        }
+
         private void StartListener()
         {
             var port = _serverOptions.Value.Port;
             _tcpListener = new TcpListener(IPAddress.Any, port);
+            _tcpListener.Server.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
             _tcpListener.Start();
 
             Console.WriteLine($"Server started on port {port}. Waiting for client connections...");
@@ -73,49 +89,76 @@ namespace Knock_Knock_TCP_Server
             {
                 try
                 {
-                    // This blocks until a client connects
+                    // AcceptTcpClient blocks until a client connects or the listener is stopped
+                    // When listener.Stop() is called, AcceptTcpClient throws SocketException
                     TcpClient client = _tcpListener!.AcceptTcpClient();
 
-                    // Create a handler for this client
-                    var handler = new ClientHandler(
-                        client,
-                        _serviceProvider,
-                        _serviceProvider.GetRequiredService<IOptions<JokesConfiguration>>(),
-                        _jokeSelector);
-
-                    // Spawn a new thread to handle this client
-                    var clientThread = new Thread(() => handler.Run())
+                    try
                     {
-                        IsBackground = true,
-                        Name = $"ClientHandler-{client.Client.RemoteEndPoint}"
-                    };
+                        // Create a handler for this client
+                        var handler = new ClientHandler(
+                            client,
+                            _serviceProvider,
+                            _serviceProvider.GetRequiredService<IOptions<JokesConfiguration>>(),
+                            _jokeSelector);
 
-                    lock (_clientThreads)
-                    {
-                        _clientThreads.Add(clientThread);
+                        // Spawn a new thread to handle this client
+                        var clientThread = new Thread(() => handler.Run())
+                        {
+                            IsBackground = true,
+                            Name = $"ClientHandler-{client.Client.RemoteEndPoint}"
+                        };
+
+                        lock (_clientThreads)
+                        {
+                            _clientThreads.Add(clientThread);
+                        }
+
+                        clientThread.Start();
                     }
-
-                    clientThread.Start();
+                    catch (ObjectDisposedException)
+                    {
+                        // Service provider was disposed, cannot handle this client
+                        try { client?.Close(); } catch { }
+                        // Continue checking if we should keep running
+                        if (!_isRunning)
+                            break;
+                        throw;  // Re-throw if we're still supposedly running
+                    }
                 }
                 catch (SocketException ex) when (!_isRunning)
                 {
                     // Expected when listener is stopped
                     break;
                 }
+                catch (ObjectDisposedException) when (!_isRunning)
+                {
+                    // Expected when listener is disposed
+                    break;
+                }
+                catch (ObjectDisposedException)
+                {
+                    // Service provider disposed, exit gracefully
+                    break;
+                }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Error accepting client connection: {ex.Message}");
+                    if (_isRunning)
+                    {
+                        Console.WriteLine($"Error accepting client connection: {ex.Message}");
+                    }
                 }
             }
         }
 
-        private void Stop()
+        private void StopInternal()
         {
             _isRunning = false;
 
             try
             {
                 _tcpListener?.Stop();
+                _tcpListener?.Dispose();
                 Console.WriteLine("Listener stopped.");
 
                 // Optionally wait for client threads to finish (with timeout)

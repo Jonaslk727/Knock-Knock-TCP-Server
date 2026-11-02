@@ -1,0 +1,212 @@
+@startuml Knock-Knock-TCP-Server-ClassDiagram
+title Knock Knock TCP Server - Class Diagram
+
+' Define the diagram direction and style
+!define ABSTRACT abstract
+!define INTERFACE interface
+
+' ============================================================================
+' INTERFACES - Strategy Pattern & State Pattern
+' ============================================================================
+
+interface IJokeSelector {
+	+SelectJoke(jokes: List<JokeModel>): JokeModel
+	+{property} StrategyName: string
+}
+
+interface IKnockKnockState {
+	+Handle(context: IConversationContext, jokesConfiguration: IOptions<JokesConfiguration>, jokeSelector: IJokeSelector): IKnockKnockState?
+	+{property} StateName: string
+}
+
+interface IConversationContext {
+	+SendMessage(message: string): void
+	+ReadMessage(): string?
+	+GetCurrentJoke(): JokeModel?
+	+SetCurrentJoke(joke: JokeModel): void
+	+GetClientIdentifier(): string?
+	+{property} IsConnected: bool
+}
+
+' ============================================================================
+' STRATEGY PATTERN - Joke Selection Strategies
+' ============================================================================
+
+class RandomJokeSelector {
+	-{static} _random: Random
+	+SelectJoke(jokes: List<JokeModel>): JokeModel
+	+{property} StrategyName: string = "Random"
+}
+RandomJokeSelector ..|> IJokeSelector : implements
+
+class SequentialJokeSelector {
+	-_currentIndex: int
+	+SelectJoke(jokes: List<JokeModel>): JokeModel
+	+{property} StrategyName: string = "Sequential"
+}
+SequentialJokeSelector ..|> IJokeSelector : implements
+
+class JokeSelectorFactory {
+	+{static} CreateJokeSelector(strategy: string): IJokeSelector
+}
+JokeSelectorFactory --> IJokeSelector : creates
+
+' ============================================================================
+' STATE PATTERN - Conversation States
+' ============================================================================
+
+class WaitingForJokeRequestState {
+	+Handle(context: IConversationContext, jokesConfiguration: IOptions<JokesConfiguration>, jokeSelector: IJokeSelector): IKnockKnockState?
+	+{property} StateName: string = "WaitingForJokeRequest"
+}
+WaitingForJokeRequestState ..|> IKnockKnockState : implements
+
+class WaitingForWhoState {
+	+Handle(context: IConversationContext, jokesConfiguration: IOptions<JokesConfiguration>, jokeSelector: IJokeSelector): IKnockKnockState?
+	+{property} StateName: string = "WaitingForWho"
+}
+WaitingForWhoState ..|> IKnockKnockState : implements
+
+class SendingPunchlineState {
+	+Handle(context: IConversationContext, jokesConfiguration: IOptions<JokesConfiguration>, jokeSelector: IJokeSelector): IKnockKnockState?
+	+{property} StateName: string = "SendingPunchline"
+}
+SendingPunchlineState ..|> IKnockKnockState : implements
+
+class LoopOrExitState {
+	+Handle(context: IConversationContext, jokesConfiguration: IOptions<JokesConfiguration>, jokeSelector: IJokeSelector): IKnockKnockState?
+	+{property} StateName: string = "LoopOrExit"
+}
+LoopOrExitState ..|> IKnockKnockState : implements
+
+' State transitions
+WaitingForJokeRequestState --> WaitingForWhoState : transitions to
+WaitingForWhoState --> SendingPunchlineState : transitions to
+SendingPunchlineState --> LoopOrExitState : transitions to
+LoopOrExitState --> WaitingForJokeRequestState : transitions to (yes)
+
+' ============================================================================
+' NETWORK & CONVERSATION MANAGEMENT
+' ============================================================================
+
+class Knock_KnockServer {
+	-_tcpListener: TcpListener?
+	-_serviceProvider: IServiceProvider
+	-_serverOptions: IOptions<ServerOptions>
+	-_jokeSelector: IJokeSelector
+	-_clientThreads: List<Thread>
+	-_isRunning: bool
+	-_hasStopped: bool
+	--
+	+Start(): void
+	+Stop(): void
+	-StartListener(): void
+	-AcceptConnections(): void
+	-StopInternal(): void
+}
+
+class ClientHandler {
+	-_tcpClient: TcpClient
+	-_networkStream: NetworkStream
+	-_streamReader: StreamReader
+	-_streamWriter: StreamWriter
+	-_serviceProvider: IServiceProvider
+	-_jokesConfiguration: IOptions<JokesConfiguration>
+	-_jokeSelector: IJokeSelector
+	-_clientIdentifier: string
+	-_currentJoke: JokeModel?
+	-_isConnected: bool
+	--
+	+Run(): void
+	-RunConversation(): void
+}
+
+ClientHandler ..|> IConversationContext : implements
+ClientHandler --> IKnockKnockState : uses
+Knock_KnockServer --> ClientHandler : creates
+
+ClientHandler --> IJokeSelector : uses in state machine
+ClientHandler --> IConversationContext : exposes to states
+
+' ============================================================================
+' CONFIGURATION
+' ============================================================================
+
+class JokeModel {
+	+Who: string
+	+Punchline: string
+}
+
+class JokesConfiguration {
+	+Jokes: List<JokeModel>
+}
+
+class ServerOptions {
+	+Port: int
+	+Strategy: string
+	+ServerSettings: ServerSettings
+}
+
+class ServerSettings {
+	+ReuseAddress: bool
+	+ReceiveBufferSize: int
+	+SendBufferSize: int
+}
+
+' ============================================================================
+' RELATIONSHIPS
+' ============================================================================
+
+IKnockKnockState --> IConversationContext : reads from/writes to
+IKnockKnockState --> IJokeSelector : uses to select joke
+IKnockKnockState --> JokesConfiguration : reads jokes from
+
+Knock_KnockServer --> IJokeSelector : injects into ClientHandler
+Knock_KnockServer --> JokesConfiguration : injects globally
+
+ClientHandler --> JokeModel : stores current joke
+JokesConfiguration --> JokeModel : contains
+
+ClientHandler --> IKnockKnockState : runs state machine
+
+' ============================================================================
+' ANNOTATIONS
+' ============================================================================
+
+note right of IJokeSelector
+  **Strategy Pattern**
+  Encapsulates different
+  joke selection algorithms.
+  Can be swapped at runtime.
+end note
+
+note right of IKnockKnockState
+  **State Pattern**
+  Each state handles one
+  part of the conversation.
+  Returns the next state.
+end note
+
+note right of IConversationContext
+  **Separation of Concerns**
+  States interact with client
+  only through this interface.
+  They don't know about
+  TcpClient or networking.
+end note
+
+note bottom of Knock_KnockServer
+  **Network Layer**
+  Multithreaded TCP server.
+  Creates one ClientHandler
+  per connected client.
+end note
+
+note bottom of ClientHandler
+  **Conversation Layer**
+  Implements IConversationContext.
+  Runs one conversation state machine
+  per client in a dedicated thread.
+end note
+
+@enduml

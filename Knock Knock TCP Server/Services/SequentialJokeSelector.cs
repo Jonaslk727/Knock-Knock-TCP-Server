@@ -9,7 +9,7 @@ namespace Knock_Knock_TCP_Server.Services
     /// Each ClientHandler instance gets its own SequentialJokeSelector, so the index
     /// is per-client and independent. No synchronization needed.
     /// </summary>
-    internal class SequentialJokeSelector : IJokeSelector
+    public class SequentialJokeSelector : IJokeSelector
     {
         private int _currentIndex = 0;
 

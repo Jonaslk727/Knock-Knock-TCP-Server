@@ -6,7 +6,7 @@ namespace Knock_Knock_TCP_Server.Services
     /// Strategy interface for selecting which knock-knock joke to tell.
     /// Implementations allow for different joke selection algorithms (Random, Sequential, etc.)
     /// </summary>
-    internal interface IJokeSelector
+    public interface IJokeSelector
     {
         /// <summary>
         /// Selects the next joke based on the strategy's algorithm.

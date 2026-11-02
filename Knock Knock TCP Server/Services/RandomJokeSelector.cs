@@ -7,7 +7,7 @@ namespace Knock_Knock_TCP_Server.Services
     /// Selects a random joke from the available list each time.
     /// This strategy is stateless and inherently thread-safe.
     /// </summary>
-    internal class RandomJokeSelector : IJokeSelector
+    public class RandomJokeSelector : IJokeSelector
     {
         private static readonly Random _random = new Random();
 

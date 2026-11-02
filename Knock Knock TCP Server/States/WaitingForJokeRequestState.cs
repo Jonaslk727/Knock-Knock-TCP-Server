@@ -10,7 +10,7 @@ namespace Knock_Knock_TCP_Server.States
     /// Expects the client to send "joke".
     /// Transitions to WaitingForWhoState if valid, stays in this state if invalid.
     /// </summary>
-    internal class WaitingForJokeRequestState : IKnockKnockState
+    public class WaitingForJokeRequestState : IKnockKnockState
     {
         public string StateName => "WaitingForJokeRequest";
 
@@ -19,6 +19,9 @@ namespace Knock_Knock_TCP_Server.States
             IOptions<JokesConfiguration> jokesConfiguration,
             IJokeSelector jokeSelector)
         {
+            // Send initial prompt to client
+            context.SendMessage("Knock knock?");
+
             string? message = context.ReadMessage();
 
             if (message?.Equals("joke", StringComparison.OrdinalIgnoreCase) == true)

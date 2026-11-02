@@ -1,0 +1,132 @@
+@startuml Knock-Knock-TCP-Server-StateDiagram
+title Knock Knock TCP Server - Conversation State Diagram for One Client
+
+' State machine for a single client conversation
+
+[*] --> WaitingForJokeRequest: Client connects
+
+' ============================================================================
+' WAITING FOR JOKE REQUEST STATE
+' ============================================================================
+
+state WaitingForJokeRequest {
+	[*] --> SendPrompt: Entry
+	SendPrompt --> SendPrompt: Server sends "Knock knock?"
+	SendPrompt --> CheckJokeRequest: Read client message
+
+	CheckJokeRequest --> SelectJoke: Client sends "joke"\n(case-insensitive)
+	SelectJoke --> TransitionToWho: Use IJokeSelector strategy\nto pick a joke
+	TransitionToWho --> WaitingForWho: Transition
+
+	CheckJokeRequest --> SendError: Client sends\nanything else
+	SendError --> SendError: Server sends "Please send\n'joke' to request\na knock knock joke."
+	SendError --> CheckJokeRequest: Loop back waiting
+}
+
+' ============================================================================
+' WAITING FOR "WHO'S THERE?" STATE
+' ============================================================================
+
+state WaitingForWho {
+	[*] --> SendKnock: Entry
+	SendKnock --> SendKnock: Server sends "Knock! Knock!"
+	SendKnock --> CheckWho: Read client message
+
+	CheckWho --> SendSetup: Client sends "Who's there?"\n(case-insensitive)
+	SendSetup --> SendSetup: Server sends the joke's\n"Who" part
+	SendSetup --> SendingPunchline: Transition
+
+	CheckWho --> SendWhoError: Client sends\nanything else
+	SendWhoError --> SendWhoError: Server sends "Please respond\nwith 'Who's there?'"
+	SendWhoError --> CheckWho: Loop back waiting
+}
+
+' ============================================================================
+' SENDING PUNCHLINE STATE
+' ============================================================================
+
+state SendingPunchline {
+	[*] --> WaitForComplete: Entry
+	WaitForComplete --> WaitForComplete: Read client message
+
+	WaitForComplete --> SendPunchline: Any non-empty\nmessage received
+	SendPunchline --> SendPunchline: Server sends the joke's\npunchline
+	SendPunchline --> LoopOrExit: Transition
+
+	WaitForComplete --> WaitForComplete: Empty message\n(wait for any input)
+}
+
+' ============================================================================
+' LOOP OR EXIT STATE
+' ============================================================================
+
+state LoopOrExit {
+	[*] --> AskMore: Entry
+	AskMore --> AskMore: Server sends "Want another joke?\n(yes/no)"
+	AskMore --> CheckResponse: Read client message
+
+	CheckResponse --> LoopYes: Client sends "yes"\n(case-insensitive)
+	CheckResponse --> LoopNo: Client sends "no"\n(case-insensitive)
+	CheckResponse --> InvalidResponse: Client sends\nanything else
+
+	LoopYes --> WaitingForJokeRequest: Transition to start new joke
+
+	LoopNo --> Goodbye: Server sends "Thanks for\nchatting! Goodbye!"
+	Goodbye --> [*]: Conversation ends\nClient thread exits
+
+	InvalidResponse --> InvalidResponse: Server sends "Please respond\nwith 'yes' or 'no'."
+	InvalidResponse --> CheckResponse: Loop back
+}
+
+' ============================================================================
+' TRANSITIONS & NOTES
+' ============================================================================
+
+WaitingForJokeRequest --> WaitingForWho: Valid "joke" request
+WaitingForWho --> SendingPunchline: Valid "Who's there?"
+SendingPunchline --> LoopOrExit: Any non-empty message received
+LoopOrExit --> WaitingForJokeRequest: "yes" response
+LoopOrExit --> [*]: "no" response
+
+' ============================================================================
+' LEGEND & DOCUMENTATION
+' ============================================================================
+
+note bottom of WaitingForJokeRequest
+  **Initial State**
+  - Entry: Send "Knock knock?"
+  - Valid input: "joke" (case-insensitive)
+  - Invalid input: Loop with error message
+  - Uses IJokeSelector strategy to select a joke
+end note
+
+note bottom of WaitingForWho
+  **Setup Acknowledgment**
+  - Entry: Send "Knock! Knock!"
+  - Valid input: "Who's there?" (case-insensitive)
+  - Invalid input: Loop with error message
+end note
+
+note bottom of SendingPunchline
+  **Waiting for Prompt**
+  - Entry: Wait for any non-empty message
+  - Sends the joke's "Who" part
+  - Then sends the punchline
+  - Transitions to LoopOrExit
+end note
+
+note bottom of LoopOrExit
+  **Conversation Continuation**
+  - Asks: "Want another joke? (yes/no)"
+  - Valid "yes": Loop back to initial state
+  - Valid "no": Send goodbye and end conversation
+  - Invalid input: Show error and re-ask
+end note
+
+note right of WaitingForJokeRequest, WaitingForWho, SendingPunchline, LoopOrExit
+  All states handle disconnected clients gracefully.
+  If the client disconnects, the state returns an error
+  and the conversation thread terminates.
+end note
+
+@enduml

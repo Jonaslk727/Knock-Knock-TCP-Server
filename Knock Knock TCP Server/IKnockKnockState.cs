@@ -19,7 +19,7 @@ namespace Knock_Knock_TCP_Server
     /// States now receive injected dependencies (IJokeSelector, IOptions) 
     /// rather than direct references to server or settings.
     /// </summary>
-    internal interface IKnockKnockState
+    public interface IKnockKnockState
     {
         /// <summary>
         /// Process the current state of the conversation.

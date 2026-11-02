@@ -6,7 +6,7 @@ namespace Knock_Knock_TCP_Server.Configuration.Validation
     /// Validates JokesConfiguration for correct values at startup.
     /// Consolidates validation logic from JokeOptionsValidator and JokeSelectionOptionsValidator.
     /// </summary>
-    internal class JokesConfigurationValidator : IValidateOptions<JokesConfiguration>
+    public class JokesConfigurationValidator : IValidateOptions<JokesConfiguration>
     {
         public ValidateOptionsResult Validate(string? name, JokesConfiguration options)
         {

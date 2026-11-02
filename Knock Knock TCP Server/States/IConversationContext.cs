@@ -7,7 +7,7 @@ namespace Knock_Knock_TCP_Server.States
     /// Each ClientHandler instance maintains one IConversationContext.
     /// This abstraction decouples state objects from the ThreadServer or TcpClient.
     /// </summary>
-    internal interface IConversationContext
+    public interface IConversationContext
     {
         /// <summary>
         /// Sends a message to the client.

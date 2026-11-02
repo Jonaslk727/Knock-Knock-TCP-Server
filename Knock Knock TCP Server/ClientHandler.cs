@@ -43,8 +43,9 @@ namespace Knock_Knock_TCP_Server
         {
             _tcpClient = tcpClient;
             _networkStream = tcpClient.GetStream();
-            _streamReader = new StreamReader(_networkStream, Encoding.UTF8);
-            _streamWriter = new StreamWriter(_networkStream, Encoding.UTF8) { AutoFlush = true };
+            // Use UTF8 without BOM to avoid extra bytes at the start
+            _streamReader = new StreamReader(_networkStream, new UTF8Encoding(false));
+            _streamWriter = new StreamWriter(_networkStream, new UTF8Encoding(false)) { AutoFlush = true };
             _serviceProvider = serviceProvider;
             _jokesConfiguration = jokesConfiguration;
             _jokeSelector = jokeSelector;
@@ -64,8 +65,19 @@ namespace Knock_Knock_TCP_Server
                 Console.WriteLine($"[{_clientIdentifier}] Client connected.");
 
                 // Start in the initial state
-                IKnockKnockState? currentState =
-                    _serviceProvider.GetService(typeof(WaitingForJokeRequestState)) as IKnockKnockState;
+                IKnockKnockState? currentState = null;
+                try
+                {
+                    currentState =
+                        _serviceProvider.GetService(typeof(WaitingForJokeRequestState)) as IKnockKnockState;
+                }
+                catch (ObjectDisposedException)
+                {
+                    // Service provider was disposed, likely during server shutdown
+                    Console.WriteLine($"[{_clientIdentifier}] Cannot start conversation: service provider was disposed");
+                    _isConnected = false;
+                    return;
+                }
 
                 // Run conversation state machine
                 while (currentState != null && _isConnected)

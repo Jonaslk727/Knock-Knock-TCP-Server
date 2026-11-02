@@ -3,7 +3,8 @@ namespace Knock_Knock_TCP_Server.Services
     /// <summary>
     /// Factory for creating IJokeSelector instances based on strategy name from configuration.
     /// </summary>
-    internal class JokeSelectorFactory
+    /// 
+    public class JokeSelectorFactory
     {
         /// <summary>
         /// Creates a joke selector based on the provided strategy name.
@@ -25,4 +26,5 @@ namespace Knock_Knock_TCP_Server.Services
             }
         }
     }
+
 }

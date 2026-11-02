@@ -5,7 +5,7 @@ namespace Knock_Knock_TCP_Server.Configuration.Validation
     /// <summary>
     /// Validates ServerOptions for correct values at startup.
     /// </summary>
-    internal class ServerOptionsValidator : IValidateOptions<ServerOptions>
+    public class ServerOptionsValidator : IValidateOptions<ServerOptions>
     {
         public ValidateOptionsResult Validate(string? name, ServerOptions options)
         {

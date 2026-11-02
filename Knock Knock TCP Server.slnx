@@ -1,4 +1,5 @@
 <Solution>
   <Project Path="Knock Kncok TCP Client/Knock Kncok TCP Client.csproj" />
   <Project Path="Knock Knock TCP Server/Knock Knock TCP Server.csproj" />
+  <Project Path="Knock_Knock_TCP_Server.Tests.Client/Knock_Knock_TCP_Server.Tests.Client.csproj" />
 </Solution>

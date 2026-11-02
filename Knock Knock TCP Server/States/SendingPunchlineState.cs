@@ -8,7 +8,7 @@ namespace Knock_Knock_TCP_Server.States
     /// Waiting for the client to respond with "[Who] who?" to complete the setup.
     /// Sends the punchline and transitions to LoopOrExitState.
     /// </summary>
-    internal class SendingPunchlineState : IKnockKnockState
+    public class SendingPunchlineState : IKnockKnockState
     {
         public string StateName => "SendingPunchline";
 

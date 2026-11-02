@@ -10,7 +10,7 @@ namespace Knock_Knock_TCP_Server.States
     /// "no"  -> returns null to end the conversation
     /// other -> asks for valid input and stays in this state
     /// </summary>
-    internal class LoopOrExitState : IKnockKnockState
+    public class LoopOrExitState : IKnockKnockState
     {
         public string StateName => "LoopOrExit";
 

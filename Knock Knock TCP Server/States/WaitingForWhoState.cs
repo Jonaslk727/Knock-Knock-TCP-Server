@@ -8,7 +8,7 @@ namespace Knock_Knock_TCP_Server.States
     /// Waiting for the client to respond with "Who's there?"
     /// Transitions to SendingPunchlineState if correct, stays in this state if incorrect.
     /// </summary>
-    internal class WaitingForWhoState : IKnockKnockState
+    public class WaitingForWhoState : IKnockKnockState
     {
         public string StateName => "WaitingForWho";
 
