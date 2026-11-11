@@ -90,55 +90,53 @@ namespace Knock_Kncok_TCP_Client
             {
                 try
                 {
-                    // Request a joke
-                    Console.WriteLine ("\n--- Requesting a joke from server ---");
-                    SendMessage ("joke");
+                    Console.WriteLine("\n--- Requesting a joke from server ---");
 
-                   
-                    ReadMessage ();
+                    // Receive "Knock knock?"
+                    ReadMessage();
 
-                    
-                    SendMessage ("Who's there?");
+                    // Send "joke"
+                    SendMessage("joke");
 
-                    // Receive 
-                    ReadMessage ();
+                    // Receive "Knock! Knock!"
+                    ReadMessage();
 
-                    // Send a punchline attempt
-                    Console.WriteLine ("Enter your answer to the punchline:");
-                    string? userAnswer = Console.ReadLine ();
-                    SendMessage (userAnswer ?? "I don't know");
+                    // Send "Who's there?"
+                    SendMessage("Who's there?");
+
+                    // Receive the joke's "Who" part
+                    ReadMessage();
+
+                    // Auto-acknowledge without revealing the punchline
+                    SendMessage("Who?");
 
                     // Receive server's punchline
-                    ReadMessage ();
+                    ReadMessage();
 
-                    // Server asks if client wants another joke
-                    string? response = ReadMessage ();
+                    // Receive "Want another joke? (yes/no)"
+                    ReadMessage();
 
-                    // Send yes or no
-                    if (response?.Contains ("another joke") == true)
+                    // Get user's yes/no response
+                    string? userChoice = Console.ReadLine();
+
+                    if (userChoice?.Equals("yes", StringComparison.OrdinalIgnoreCase) == true)
                     {
-                        Console.WriteLine ("Do you want another joke? (yes/no)");
-                        string? userChoice = Console.ReadLine ();
-                        SendMessage (userChoice ?? "no");
-
-                        if (userChoice?.ToLower () != "yes")
-                        {
-                            wantMoreJokes = false;
-                        }
+                        SendMessage("yes");
                     }
                     else
                     {
+                        SendMessage("no");
                         wantMoreJokes = false;
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine ($"Error: {ex.Message}");
+                    Console.WriteLine($"Error: {ex.Message}");
                     wantMoreJokes = false;
                 }
             }
 
-            Console.WriteLine ("\nThank you for playing!");
+            Console.WriteLine("\nThank you for playing!");
         }
 
         private void SendMessage(string message)
