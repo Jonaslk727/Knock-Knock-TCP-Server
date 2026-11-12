@@ -20,7 +20,7 @@ namespace Knock_Knock_TCP_Server
                 var builder = Host.CreateApplicationBuilder(args);
 
                 builder.Configuration.SetBasePath(Directory.GetCurrentDirectory());
-                builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: false);
+                builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
 
                 // Configure services and dependency injection
                 var configuration = builder.Configuration;
@@ -40,7 +40,7 @@ namespace Knock_Knock_TCP_Server
                 builder.Services.AddSingleton(provider =>
                 {
                     var jokesConfig = provider.GetRequiredService<IOptions<JokesConfiguration>>();
-                    return JokeSelectorFactory.CreateSelector(jokesConfig.Value.SelectionStrategy);
+                    return JokeSelectorFactory.CreateSelector(jokesConfig.Value.Strategy);
                 });
 
                 // Register state classes (Transient = a new instance is provided every time it is requested)

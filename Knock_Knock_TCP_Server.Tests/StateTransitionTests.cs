@@ -25,7 +25,7 @@ namespace Knock_Knock_TCP_Server.Tests
                     new JokeModel { Who = "Lettuce", Punchline = "Lettuce in!" },
                     new JokeModel { Who = "Boo", Punchline = "Don't cry!" }
                 },
-                SelectionStrategy = "Random"
+                Strategy = "Random"
             };
 
             _jokeOptions = Options.Create(jokesConfig);
@@ -143,7 +143,7 @@ namespace Knock_Knock_TCP_Server.Tests
                 {
                     new JokeModel { Who = "Lettuce", Punchline = "Lettuce in!" }
                 },
-                SelectionStrategy = "Random"
+                Strategy = "Random"
             };
 
             _jokeOptions = Options.Create(jokesConfig);
@@ -247,7 +247,7 @@ namespace Knock_Knock_TCP_Server.Tests
                 {
                     new JokeModel { Who = "Lettuce", Punchline = "Lettuce in!" }
                 },
-                SelectionStrategy = "Random"
+                Strategy = "Random"
             };
 
             _jokeOptions = Options.Create(jokesConfig);
@@ -363,7 +363,7 @@ namespace Knock_Knock_TCP_Server.Tests
                 {
                     new JokeModel { Who = "Test", Punchline = "Test!" }
                 },
-                SelectionStrategy = "Random"
+                Strategy = "Random"
             };
 
             _jokeOptions = Options.Create(jokesConfig);

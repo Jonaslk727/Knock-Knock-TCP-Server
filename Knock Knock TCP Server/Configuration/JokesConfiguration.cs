@@ -18,6 +18,6 @@ namespace Knock_Knock_TCP_Server.Configuration
         /// The strategy to use for selecting jokes: "Random" or "Sequential".
         /// Bound from appsettings.json ["JokeStrategy"]["Strategy"] section.
         /// </summary>
-        public string SelectionStrategy { get; set; } = "Random";
+        public string Strategy { get; set; }
     }
 }

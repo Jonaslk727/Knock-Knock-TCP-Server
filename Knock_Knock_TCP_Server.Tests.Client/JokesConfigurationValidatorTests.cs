@@ -24,7 +24,7 @@ namespace Knock_Knock_TCP_Server.Tests.Client
                     new JokeModel { Who = "Interrupt", Punchline = "MOOOO!" },
                     new JokeModel { Who = "Dozen", Punchline = "Dozen anybody want to let me in?" }
                 },
-                SelectionStrategy = "Random"
+                Strategy = "Random"
             };
             var result = validator.Validate("Jokes", options);
             Assert.Equal(ValidateOptionsResult.Success, result);
@@ -44,7 +44,7 @@ namespace Knock_Knock_TCP_Server.Tests.Client
                     new JokeModel { Who = "Joke4", Punchline = "Punchline 4" },
                     new JokeModel { Who = "Joke5", Punchline = "Punchline 5" }
                 },
-                SelectionStrategy = "Sequential"
+                Strategy = "Sequential"
             };
             var result = validator.Validate("Jokes", options);
             Assert.Equal(ValidateOptionsResult.Success, result);
@@ -57,7 +57,7 @@ namespace Knock_Knock_TCP_Server.Tests.Client
             var options = new JokesConfiguration
             {
                 Jokes = new List<JokeModel>(),
-                SelectionStrategy = "Random"
+                Strategy = "Random"
             };
             var result = validator.Validate("Jokes", options);
             Assert.NotEqual(ValidateOptionsResult.Success, result);
@@ -67,7 +67,7 @@ namespace Knock_Knock_TCP_Server.Tests.Client
         public void Validate_WithNullJokesList_ReturnsFail()
         {
             var validator = new JokesConfigurationValidator();
-            var options = new JokesConfiguration { Jokes = null, SelectionStrategy = "Random" };
+            var options = new JokesConfiguration { Jokes = null, Strategy = "Random" };
             var result = validator.Validate("Jokes", options);
             Assert.NotEqual(ValidateOptionsResult.Success, result);
         }
@@ -85,7 +85,7 @@ namespace Knock_Knock_TCP_Server.Tests.Client
                 {
                     new JokeModel { Who = "Test", Punchline = "Test punchline" }
                 },
-                SelectionStrategy = invalidStrategy
+                Strategy = invalidStrategy
             };
             var result = validator.Validate("Jokes", options);
             Assert.NotEqual(ValidateOptionsResult.Success, result);
@@ -101,7 +101,7 @@ namespace Knock_Knock_TCP_Server.Tests.Client
                 {
                     new JokeModel { Who = null, Punchline = "Some punchline" }
                 },
-                SelectionStrategy = "Random"
+                Strategy = "Random"
             };
             var result = validator.Validate("Jokes", options);
             Assert.NotEqual(ValidateOptionsResult.Success, result);
@@ -117,7 +117,7 @@ namespace Knock_Knock_TCP_Server.Tests.Client
                 {
                     new JokeModel { Who = "Who", Punchline = null }
                 },
-                SelectionStrategy = "Random"
+                Strategy = "Random"
             };
             var result = validator.Validate("Jokes", options);
             Assert.NotEqual(ValidateOptionsResult.Success, result);
@@ -137,7 +137,7 @@ namespace Knock_Knock_TCP_Server.Tests.Client
                     new JokeModel { Who = "Joke4", Punchline = "Punchline 4" },
                     new JokeModel { Who = "Joke5", Punchline = "Punchline 5" }
                 },
-                SelectionStrategy = "Random"
+                Strategy = "Random"
             };
             var result = validator.Validate("Jokes", options);
             Assert.Equal(ValidateOptionsResult.Success, result);
@@ -150,7 +150,7 @@ namespace Knock_Knock_TCP_Server.Tests.Client
             var jokes = Enumerable.Range(1, 100)
                 .Select(i => new JokeModel { Who = $"Setup{i}", Punchline = $"Punch{i}" })
                 .ToList();
-            var options = new JokesConfiguration { Jokes = jokes, SelectionStrategy = "Random" };
+            var options = new JokesConfiguration { Jokes = jokes, Strategy = "Random" };
             var result = validator.Validate("Jokes", options);
             Assert.Equal(ValidateOptionsResult.Success, result);
         }

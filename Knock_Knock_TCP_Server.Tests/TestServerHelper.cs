@@ -68,14 +68,14 @@ namespace Knock_Knock_TCP_Server.Tests
             builder.Services.Configure<JokesConfiguration>(options =>
             {
                 options.Jokes = _jokes;
-                options.SelectionStrategy = _strategy;
+                options.Strategy = _strategy;
             });
             builder.Services.AddSingleton<IValidateOptions<JokesConfiguration>, JokesConfigurationValidator>();
 
             builder.Services.AddSingleton(provider =>
             {
                 var jokesConfig = provider.GetRequiredService<IOptions<JokesConfiguration>>();
-                return JokeSelectorFactory.CreateSelector(jokesConfig.Value.SelectionStrategy);
+                return JokeSelectorFactory.CreateSelector(jokesConfig.Value.Strategy);
             });
 
             builder.Services.AddTransient<WaitingForJokeRequestState>();

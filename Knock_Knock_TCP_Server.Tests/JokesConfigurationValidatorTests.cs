@@ -19,7 +19,7 @@ namespace Knock_Knock_TCP_Server.Tests
                     new JokeModel { Who = "Lettuce", Punchline = "Lettuce in, it's cold out here!" },
                     new JokeModel { Who = "Boo", Punchline = "Don't cry, it's only a joke!" }
                 },
-                SelectionStrategy = "Random"
+                Strategy = "Random"
             };
 
             // Act
@@ -40,7 +40,7 @@ namespace Knock_Knock_TCP_Server.Tests
                 {
                     new JokeModel { Who = "Knock", Punchline = "Punchline 1" }
                 },
-                SelectionStrategy = "Sequential"
+                Strategy = "Sequential"
             };
 
             // Act
@@ -58,7 +58,7 @@ namespace Knock_Knock_TCP_Server.Tests
             var options = new JokesConfiguration
             {
                 Jokes = new List<JokeModel>(),
-                SelectionStrategy = "Random"
+                Strategy = "Random"
             };
 
             // Act
@@ -78,7 +78,7 @@ namespace Knock_Knock_TCP_Server.Tests
             var options = new JokesConfiguration
             {
                 Jokes = null,
-                SelectionStrategy = "Random"
+                Strategy = "Random"
             };
 
             // Act
@@ -105,7 +105,7 @@ namespace Knock_Knock_TCP_Server.Tests
                 {
                     new JokeModel { Who = "Test", Punchline = "Test punchline" }
                 },
-                SelectionStrategy = invalidStrategy
+                Strategy = invalidStrategy
             };
 
             // Act
@@ -128,7 +128,7 @@ namespace Knock_Knock_TCP_Server.Tests
                 {
                     new JokeModel { Who = null, Punchline = "Some punchline" }
                 },
-                SelectionStrategy = "Random"
+                Strategy = "Random"
             };
 
             // Act
@@ -151,7 +151,7 @@ namespace Knock_Knock_TCP_Server.Tests
                 {
                     new JokeModel { Who = "Who", Punchline = null }
                 },
-                SelectionStrategy = "Random"
+                Strategy = "Random"
             };
 
             // Act
@@ -174,7 +174,7 @@ namespace Knock_Knock_TCP_Server.Tests
                 {
                     new JokeModel { Who = "Solo", Punchline = "I'm alone!" }
                 },
-                SelectionStrategy = "Random"
+                Strategy = "Random"
             };
 
             // Act
@@ -195,7 +195,7 @@ namespace Knock_Knock_TCP_Server.Tests
                 {
                     new JokeModel { Who = "Test", Punchline = "Test" }
                 },
-                SelectionStrategy = "BadStrategy"
+                Strategy = "BadStrategy"
             };
 
             // Act
@@ -220,7 +220,7 @@ namespace Knock_Knock_TCP_Server.Tests
             var options = new JokesConfiguration
             {
                 Jokes = new List<JokeModel>(),
-                SelectionStrategy = "Random"
+                Strategy = "Random"
             };
 
             // Act
@@ -249,7 +249,7 @@ namespace Knock_Knock_TCP_Server.Tests
             var options = new JokesConfiguration
             {
                 Jokes = jokes,
-                SelectionStrategy = "Random"
+                Strategy = "Random"
             };
 
             // Act

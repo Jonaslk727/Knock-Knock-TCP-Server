@@ -36,14 +36,14 @@ namespace Knock_Knock_TCP_Server.Configuration.Validation
             }
 
             // Validate selection strategy
-            if (string.IsNullOrWhiteSpace(options.SelectionStrategy))
+            if (string.IsNullOrWhiteSpace(options.Strategy))
                 return ValidateOptionsResult.Fail(
                     "JokeStrategy.Strategy cannot be empty. Use 'Random' or 'Sequential'");
 
             var validStrategies = new[] { "Random", "Sequential", "random", "sequential" };
-            if (!validStrategies.Contains(options.SelectionStrategy))
+            if (!validStrategies.Contains(options.Strategy))
                 return ValidateOptionsResult.Fail(
-                    $"JokeStrategy.Strategy '{options.SelectionStrategy}' is not recognized. " +
+                    $"JokeStrategy.Strategy '{options.Strategy}' is not recognized. " +
                     $"Supported strategies: 'Random', 'Sequential'");
 
             return ValidateOptionsResult.Success;

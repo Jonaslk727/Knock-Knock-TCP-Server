@@ -21,7 +21,7 @@ namespace Knock_Knock_TCP_Server.Tests.Client
             var jokesConfig = new JokesConfiguration
             {
                 Jokes = new List<JokeModel> { selectedJoke },
-                SelectionStrategy = "Random"
+                Strategy = "Random"
             };
             var jokeOptions = Options.Create(jokesConfig);
 
@@ -43,7 +43,7 @@ namespace Knock_Knock_TCP_Server.Tests.Client
             var mockContext = new Mock<IConversationContext>();
             var mockJokeSelector = new Mock<IJokeSelector>();
             var state = new WaitingForJokeRequestState();
-            var jokeOptions = Options.Create(new JokesConfiguration { Jokes = new List<JokeModel>(), SelectionStrategy = "Random" });
+            var jokeOptions = Options.Create(new JokesConfiguration { Jokes = new List<JokeModel>(), Strategy = "Random" });
 
             mockContext.Setup(c => c.ReadMessage()).Returns(message);
 
@@ -62,7 +62,7 @@ namespace Knock_Knock_TCP_Server.Tests.Client
             var mockJokeSelector = new Mock<IJokeSelector>();
             var state = new WaitingForWhoState();
             var joke = new JokeModel { Who = "Lettuce", Punchline = "Lettuce in!" };
-            var jokeOptions = Options.Create(new JokesConfiguration { Jokes = new List<JokeModel> { joke }, SelectionStrategy = "Random" });
+            var jokeOptions = Options.Create(new JokesConfiguration { Jokes = new List<JokeModel> { joke }, Strategy = "Random" });
 
             mockContext.Setup(c => c.ReadMessage()).Returns("Who's there?");
             mockContext.Setup(c => c.GetCurrentJoke()).Returns(joke);
@@ -82,7 +82,7 @@ namespace Knock_Knock_TCP_Server.Tests.Client
             var mockJokeSelector = new Mock<IJokeSelector>();
             var state = new WaitingForWhoState();
             var joke = new JokeModel { Who = "Test", Punchline = "Test!" };
-            var jokeOptions = Options.Create(new JokesConfiguration { Jokes = new List<JokeModel> { joke }, SelectionStrategy = "Random" });
+            var jokeOptions = Options.Create(new JokesConfiguration { Jokes = new List<JokeModel> { joke }, Strategy = "Random" });
 
             mockContext.Setup(c => c.ReadMessage()).Returns(response);
             mockContext.Setup(c => c.GetCurrentJoke()).Returns(joke);
@@ -102,7 +102,7 @@ namespace Knock_Knock_TCP_Server.Tests.Client
             var mockJokeSelector = new Mock<IJokeSelector>();
             var state = new SendingPunchlineState();
             var joke = new JokeModel { Who = "Lettuce", Punchline = "Lettuce in!" };
-            var jokeOptions = Options.Create(new JokesConfiguration { Jokes = new List<JokeModel> { joke }, SelectionStrategy = "Random" });
+            var jokeOptions = Options.Create(new JokesConfiguration { Jokes = new List<JokeModel> { joke }, Strategy = "Random" });
 
             mockContext.Setup(c => c.ReadMessage()).Returns("Lettuce who?");
             mockContext.Setup(c => c.GetCurrentJoke()).Returns(joke);
@@ -120,7 +120,7 @@ namespace Knock_Knock_TCP_Server.Tests.Client
             var mockJokeSelector = new Mock<IJokeSelector>();
             var state = new SendingPunchlineState();
             var joke = new JokeModel { Who = "Test", Punchline = "Test!" };
-            var jokeOptions = Options.Create(new JokesConfiguration { Jokes = new List<JokeModel> { joke }, SelectionStrategy = "Random" });
+            var jokeOptions = Options.Create(new JokesConfiguration { Jokes = new List<JokeModel> { joke }, Strategy = "Random" });
 
             mockContext.Setup(c => c.ReadMessage()).Returns("");
             mockContext.Setup(c => c.GetCurrentJoke()).Returns(joke);
@@ -139,7 +139,7 @@ namespace Knock_Knock_TCP_Server.Tests.Client
             var mockContext = new Mock<IConversationContext>();
             var mockJokeSelector = new Mock<IJokeSelector>();
             var state = new LoopOrExitState();
-            var jokeOptions = Options.Create(new JokesConfiguration { Jokes = new List<JokeModel>(), SelectionStrategy = "Random" });
+            var jokeOptions = Options.Create(new JokesConfiguration { Jokes = new List<JokeModel>(), Strategy = "Random" });
 
             mockContext.Setup(c => c.ReadMessage()).Returns("yes");
 
@@ -155,7 +155,7 @@ namespace Knock_Knock_TCP_Server.Tests.Client
             var mockContext = new Mock<IConversationContext>();
             var mockJokeSelector = new Mock<IJokeSelector>();
             var state = new LoopOrExitState();
-            var jokeOptions = Options.Create(new JokesConfiguration { Jokes = new List<JokeModel>(), SelectionStrategy = "Random" });
+            var jokeOptions = Options.Create(new JokesConfiguration { Jokes = new List<JokeModel>(), Strategy = "Random" });
 
             mockContext.Setup(c => c.ReadMessage()).Returns("no");
 
@@ -172,7 +172,7 @@ namespace Knock_Knock_TCP_Server.Tests.Client
             var mockContext = new Mock<IConversationContext>();
             var mockJokeSelector = new Mock<IJokeSelector>();
             var state = new LoopOrExitState();
-            var jokeOptions = Options.Create(new JokesConfiguration { Jokes = new List<JokeModel>(), SelectionStrategy = "Random" });
+            var jokeOptions = Options.Create(new JokesConfiguration { Jokes = new List<JokeModel>(), Strategy = "Random" });
 
             mockContext.Setup(c => c.ReadMessage()).Returns(response);
 
