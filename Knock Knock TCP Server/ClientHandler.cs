@@ -84,6 +84,8 @@ namespace Knock_Knock_TCP_Server
                 {
                     try
                     {
+                        // Each state returns the next state to transition to, or null to end the conversation
+                        // this key word is used to ensure that the currentState variable is updated with the new state returned by Handle()
                         currentState = currentState.Handle(this, _jokesConfiguration, _jokeSelector);
                     }
                     catch (IOException ex)

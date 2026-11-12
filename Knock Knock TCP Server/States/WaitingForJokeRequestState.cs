@@ -20,7 +20,7 @@ namespace Knock_Knock_TCP_Server.States
             IJokeSelector jokeSelector)
         {
             // Send initial prompt to client
-            context.SendMessage("Knock knock?");
+            context.SendMessage("Knock knock joke?");
 
             string? message = context.ReadMessage();
 
